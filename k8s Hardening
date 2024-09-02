@@ -1,0 +1,26 @@
+Secure your Pods
+  Containers that run applications should not have root privileges
+  Containers should have an immutable filesystem, meaning they cannot be altered or added to (depending on the purpose of the container, this may not be possible) 
+  Container images should be frequently scanned for vulnerabilities or misconfigurations 
+  Privileged containers should be prevented  
+  Pod Security Standards and Pod Security Admission
+
+Hardening and Separation of your Network
+  Access to the control plane node should be restricted using a firewall and role-based access control in an isolated network
+  Control plane components should communicate using Transport Layer Security (TLS) certificates
+  An explicit deny policy should be created
+  Credentials and sensitive information should not be stored as plain text in configuration files. Instead, they should be encrypted and in Kubernetes secrets
+
+Using Authentication and Authorisation Optimally 
+  Anonymous access should be disabled 
+  Strong user authentication should be used 
+  RBAC policies should be created for the various teams using the cluster and the service accounts utilised 
+
+Keeping an Eye Out
+  Audit logging should be enabled 
+  A log monitoring and alerting system should be implemented
+
+Security Never Sleeps
+  Security patches and updates should be applied quickly
+  Vulnerability scans and penetration tests should be done semi-regularly 
+  Any obsolete components in the cluster should be removed
