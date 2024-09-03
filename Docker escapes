@@ -63,5 +63,19 @@ vulnerability here is Docker is remotely accessible and allows anyone to execute
          4789 and 7946: overlay networking
          Only the first two are set with dockerd -H, swarm mode can be configured as part of docker swarm init --listen-addr or docker swarm join --listen-addr.
 
+**Abusing Namespaces**
+
+For this vulnerability, we will be using nsenter (namespace enter). This command allows us to execute or start processes, and place them within the same namespace as another process
+
+attack payload -> nsenter --target 1 --mount --uts --ipc --net /bin/bash
+                  -> --target switch with the value of "1" to execute our shell command that we later provide to execute in the namespace of the special system process ID to get the ultimate root!
+                  -> --mount this is where we provide the mount namespace of the process that we are targeting
+                  -> --uts switch allows us to share the same UTS namespace as the target process meaning the same hostname is used. This is important as mismatching hostnames can cause connection issues (especially with network services).
+                  -> --ipc switch means that we enter the Inter-process Communication namespace of the process which is important. This means that memory can be shared
+                  -> --net switch means that we enter the network namespace meaning that we can interact with network-related features of the system
+                  -> since  we are targeting the "/sbin/init" process #1 (although it's a symbolic link to "lib/systemd/systemd" for backwards compatibility), we are using the namespace and permissions of the systemd daemon for our new process (the shell)
+                  
+
+
 
 
